@@ -1,0 +1,48 @@
+# Video Search
+
+Search inside videos by content using CLIP — no filenames needed.
+
+## Setup
+
+```
+pip install -r requirements.txt
+```
+
+First run downloads the CLIP model (~350MB). After that fully offline.
+
+## Usage
+
+1. Open `main.py`
+2. Change `FOLDER` to your video folder path
+3. Change `MODE` to `"fast"` or `"better"`
+4. Run:
+
+```
+python main.py
+```
+
+Then type any search query:
+
+```
+Search: lion
+Search: lion drinking water
+Search: two animals fighting
+```
+
+## File structure
+
+```
+video_search/
+  main.py           # entry point — run this
+  scanner.py        # scans folder for video files
+  extractor.py      # extracts frames using scene change detection
+  searcher.py       # runs CLIP and finds matches in parallel
+  requirements.txt  # dependencies
+```
+
+## Modes
+
+| Mode   | Frames | Speed | Accuracy |
+|--------|--------|-------|----------|
+| fast   | fewer  | quick | good     |
+| better | more   | slow  | great    |
