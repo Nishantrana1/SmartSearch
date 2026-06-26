@@ -1,48 +1,196 @@
-# Video Search
+# Visura — Search Inside Videos by Content
 
-Search inside videos by content using CLIP — no filenames needed.
+Most video search tools search by filename. SmartSearch searches by what is actually happening inside the video.
+
+---
+
+## The Problem With Normal Search
+
+When you have a folder full of videos, normal search works like this:
+
+```
+You search: "lion"
+System checks: does any filename contain the word "lion"?
+video_01.mp4     → no match
+animal_clip.mp4  → no match
+zoo_footage.mp4  → no match
+```
+
+If your files have random or meaningless names, normal search is completely useless. It has no idea what is inside the video. It only reads the filename, nothing else.
+
+This is metadata search — searching the label on the box, not the contents inside it.
+
+---
+
+## How SmartSearch Works Differently
+
+SmartSearch does not look at filenames at all. It opens every video, looks at the actual frames inside, and uses AI to understand what is visually present in each frame.
+
+```
+You search: "lion"
+System opens video_01.mp4 → looks at frames → no lion found
+System opens animal_clip.mp4 → looks at frames → lion found at 0:15 and 1:32
+System opens zoo_footage.mp4 → looks at frames → lion found at 3:45
+```
+
+The filename does not matter. What matters is what is actually in the video.
+
+---
+
+## The Full Technical Approach
+
+### Step 1 — Scan the folder
+
+The app scans your chosen folder and collects all video files regardless of their names. It supports .mp4, .avi, .mov, .mkv, and .wmv formats.
+
+### Step 2 — Frame extraction with scene change detection
+
+A video is just thousands of images played quickly. SmartSearch does not check every single frame — that would be slow and wasteful. Instead it uses scene change detection to extract only the frames where something meaningful changes.
+
+How scene change detection works:
+- Convert each frame to grayscale
+- Compare it to the previous frame pixel by pixel
+- Calculate the average difference across all pixels
+- If the difference is above a threshold, something changed — grab this frame
+- If the difference is small, the scene is the same — skip this frame
+
+This means instead of processing 9000 frames from a 5 minute video, SmartSearch might only process 200 meaningful frames where the scene actually changed.
+
+### Step 3 — CLIP searches each frame
+
+Each extracted frame is passed to CLIP (Contrastive Language Image Pretraining), an AI model developed by OpenAI and trained on 400 million image and text pairs from the internet.
+
+CLIP does not work like traditional object detection. It does not have a fixed list of categories. Instead it understands the relationship between images and natural language. You give it an image and a text query and it returns a similarity score between 0 and 1.
+
+```
+Frame from video + "lion"              → score 0.91 → match
+Frame from video + "lion"              → score 0.08 → no match
+Frame from video + "lion drinking water" → score 0.84 → match
+```
+
+This means you can search using natural language, not just single words.
+
+### Step 4 — Live results per video
+
+SmartSearch does not wait until all videos are checked before showing results. The moment a match is found in a video, that result is shown immediately. The app then moves to the next video and continues.
+
+```
+Checking video_01.mp4... not found
+Checking animal_clip.mp4... FOUND at 0:15, 1:32
+Checking zoo_footage.mp4... FOUND at 3:45
+```
+
+Each match includes the exact timestamp so you can jump directly to that moment.
+
+---
+
+## Normal Search vs SmartSearch
+
+| | Normal Search | SmartSearch |
+|---|---|---|
+| What it reads | Filename only | Actual video content |
+| Requires correct filename | Yes | No |
+| Understands natural language | No | Yes |
+| Can find "lion drinking water" | No | Yes |
+| Works with random filenames | No | Yes |
+| Runs offline | Yes | Yes after first setup |
+| Needs internet | No | No after model download |
+| Cost per search | Free | Free |
+
+---
 
 ## Setup
+
+Make sure you have Python installed, then run:
 
 ```
 pip install -r requirements.txt
 ```
 
-First run downloads the CLIP model (~350MB). After that fully offline.
+The first run will download the CLIP model (~350MB). After that everything runs fully offline on your machine. No API calls, no internet required, no cost.
 
-## Usage
+---
 
-1. Open `main.py`
-2. Change `FOLDER` to your video folder path
-3. Change `MODE` to `"fast"` or `"better"`
-4. Run:
+## How to Run
 
 ```
 python main.py
 ```
 
-Then type any search query:
+The app will ask you:
 
 ```
-Search: lion
-Search: lion drinking water
-Search: two animals fighting
+Enter the folder path that contains your videos.
+Example: D:/videos/zoo
+
+Folder path: D:/videos/zoo
+
+Choose search mode:
+  1 — Fast   (fewer frames, quicker)
+  2 — Better (more frames, accurate)
+
+Enter 1 or 2: 2
+
+Search keyword: lion
+
+  [1/5] Checking video_01.mp4... not found
+  [2/5] Checking animal_clip.mp4... FOUND at 0:15, 1:32 (confidence 91%)
+  [3/5] Checking zoo_footage.mp4... FOUND at 3:45 (confidence 88%)
+  [4/5] Checking random_name.mp4... not found
+  [5/5] Checking clip_007.mp4... FOUND at 2:10 (confidence 79%)
+
+Done. 'lion' found in 3 video(s).
+
+Search keyword: lion drinking water
 ```
 
-## File structure
+You can search multiple keywords in a row without restarting the app.
+
+---
+
+## Search Modes
+
+| Mode | How it works | Best for |
+|---|---|---|
+| Fast | Grabs fewer frames (large scene change threshold) | Quick browse when you roughly know what you want |
+| Better | Grabs more frames (small scene change threshold) | Thorough search when accuracy matters |
+
+---
+
+## File Structure
 
 ```
-video_search/
-  main.py           # entry point — run this
-  scanner.py        # scans folder for video files
-  extractor.py      # extracts frames using scene change detection
-  searcher.py       # runs CLIP and finds matches in parallel
-  requirements.txt  # dependencies
+SmartSearch/
+  main.py          — entry point, handles user input and controls the flow
+  scanner.py       — scans folder and returns all video file paths
+  extractor.py     — extracts meaningful frames using scene change detection
+  searcher.py      — loads CLIP and searches frames for the query
+  requirements.txt — all dependencies
+  README.md        — this file
 ```
 
-## Modes
+---
 
-| Mode   | Frames | Speed | Accuracy |
-|--------|--------|-------|----------|
-| fast   | fewer  | quick | good     |
-| better | more   | slow  | great    |
+## Example Searches
+
+Because CLIP understands natural language, you are not limited to single words:
+
+```
+lion
+lion drinking water
+two animals fighting
+animal running in grass
+bird flying over water
+crowd of people
+close up of face
+fire in background
+```
+
+---
+
+## Requirements
+
+- Python 3.8 or higher
+- 500MB disk space for CLIP model
+- Works on CPU (slower) or GPU (faster)
+- No internet required after first setup
