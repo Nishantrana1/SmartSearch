@@ -1,6 +1,9 @@
+You seek. It sees.
+
 # Visura — Search Inside Videos by Content
 
-Most video search tools search by filename. SmartSearch searches by what is actually happening inside the video.
+
+Most video search tools search by filename. Visura searches by what is actually happening inside the video.
 
 ---
 
@@ -10,7 +13,7 @@ When you have a folder full of videos, normal search works like this:
 
 ```
 You search: "lion"
-System checks: does any filename contain the word "lion"?
+System checks: does any filename contain the word "lion"?( mainly checks the File meta Data)
 video_01.mp4     → no match
 animal_clip.mp4  → no match
 zoo_footage.mp4  → no match
@@ -22,9 +25,9 @@ This is metadata search — searching the label on the box, not the contents ins
 
 ---
 
-## How SmartSearch Works Differently
+## How Visura Works Differently
 
-SmartSearch does not look at filenames at all. It opens every video, looks at the actual frames inside, and uses AI to understand what is visually present in each frame.
+Visura does not look at filenames at all. It opens every video, looks at the actual frames inside, and uses AI to understand what is visually present in each frame.
 
 ```
 You search: "lion"
@@ -41,11 +44,11 @@ The filename does not matter. What matters is what is actually in the video.
 
 ### Step 1 — Scan the folder
 
-The app scans your chosen folder and collects all video files regardless of their names. It supports .mp4, .avi, .mov, .mkv, and .wmv formats.
+The model scans your chosen folder and collects all video files regardless of their names. It supports .mp4, .avi, .mov, .mkv, and .wmv formats.
 
 ### Step 2 — Frame extraction with scene change detection
 
-A video is just thousands of images played quickly. SmartSearch does not check every single frame — that would be slow and wasteful. Instead it uses scene change detection to extract only the frames where something meaningful changes.
+A video is just thousands of images played quickly. Visura does not check every single frame — that would be slow and wasteful. Instead it uses scene change detection to extract only the frames where something meaningful changes.
 
 How scene change detection works:
 - Convert each frame to grayscale
@@ -54,7 +57,7 @@ How scene change detection works:
 - If the difference is above a threshold, something changed — grab this frame
 - If the difference is small, the scene is the same — skip this frame
 
-This means instead of processing 9000 frames from a 5 minute video, SmartSearch might only process 200 meaningful frames where the scene actually changed.
+This means instead of processing 9000 frames from a 5 minute video, Visura might only process 200 meaningful frames where the scene actually changed.
 
 ### Step 3 — CLIP searches each frame
 
@@ -84,18 +87,18 @@ Each match includes the exact timestamp so you can jump directly to that moment.
 
 ---
 
-## Normal Search vs SmartSearch
+## Normal Search vs Visura
 
-| | Normal Search | SmartSearch |
-|---|---|---|
-| What it reads | Filename only | Actual video content |
-| Requires correct filename | Yes | No |
-| Understands natural language | No | Yes |
-| Can find "lion drinking water" | No | Yes |
-| Works with random filenames | No | Yes |
-| Runs offline | Yes | Yes after first setup |
-| Needs internet | No | No after model download |
-| Cost per search | Free | Free |
+|                               | Normal Search | Visura |
+|-------------------------------|---------------|--------|--------------
+| What it reads                 | Filename only | Actual video content |
+| Requires correct filename     | Yes           | No     |
+| Understands natural language  | No            | Yes    |
+| Can find "lion drinking water"| No            | Yes    |
+| Works with random filenames   | No            | Yes    |
+| Runs offline                  | Yes           | Yes after first setup |
+| Needs internet                | No            | No after model download |
+| Cost per search               | Free          | Free   |
 
 ---
 
